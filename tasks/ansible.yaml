@@ -1,0 +1,136 @@
+- name: SafeStake Geth Lighthouse MEV-Boost
+  hosts: hetzner_germany_safestake
+  become: yes
+  roles:
+    # Install dependencies
+    - role: geerlingguy.docker
+    - role: geerlingguy.pip
+      pip_install_packages: #only required for hetzner_germany
+        - name: docker #only required for hetzner_germany
+
+    # Install pre-tasks
+    - role: roles/pretasks
+
+    # Install ansible collection role from ethpandaOps
+    - role: ethpandaops.general.ethereum_node
+      ethereum_node_mev_boost_enabled: true
+      ethereum_node_cl_validator_fee_recipient: ""
+      # Choose EL & CL
+      ethereum_node_el: geth
+      ethereum_node_cl: lighthouse
+
+      # Client specific configuration
+
+      # Geth
+      geth_container_image: ethereum/client-go:v1.13.10
+      geth_container_command_extra_args:
+        - --goerli
+        - --ws
+        - --ws.port=8545
+        - --ws.addr=0.0.0.0
+        - --ws.origins=*
+        - --http.corsdomain=*
+        - --http.vhosts=*
+        - --state.scheme=path
+
+      # Lighthouse
+      lighthouse_container_image: sigp/lighthouse:v4.5.0-amd64-modern
+      lighthouse_checkpoint_sync_enabled: true
+      checkpoint_sync_url: https://goerli.checkpoint-sync.ethpandaops.io
+      lighthouse_container_command_extra_args:
+        - --network=goerli
+        - --builder=http://mev-boost:18550
+        - --suggested-fee-recipient=
+        - --target-peers=100
+
+      # MEV-Boost
+      mev_boost_container_image: flashbots/mev-boost:1.6
+      mev_boost_container_name: mev-boost
+      mev_boost_container_command_extra_args:
+        - --goerli
+        - --relays=
+
+    # SafeStake
+    - role: roles/safestake
+
+    # Prometheus
+    - role: ethpandaops.general.prometheus
+      prometheus_container_ports:
+        - "0.0.0.0:9090:9090"
+      prometheus_container_networks:
+        - name: shared
+      prometheus_config: |
+        # my global config
+        global:
+          scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+          evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+          # scrape_timeout is set to the global default (10s).
+
+          # Attach these labels to any time series or alerts when communicating with
+          # external systems (federation, remote storage, Alertmanager).
+          external_labels:
+            monitor: 'codelab-monitor'
+
+        # Alertmanager configuration
+        alerting:
+          alertmanagers:
+            - static_configs:
+                - targets:
+                  # - alertmanager:9093
+
+        # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+        rule_files:
+          # - "first_rules.yml"
+          # - "second_rules.yml"
+
+        # A scrape configuration containing exactly one endpoint to scrape:
+        # Here it's Prometheus itself.
+        scrape_configs:
+          # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+          - job_name: "prometheus-canada"
+
+            # metrics_path defaults to '/metrics'
+            # scheme defaults to 'http'.
+
+            static_configs:
+              - targets: ["localhost:9090"]
+                labels:
+                  name: 'prometheus'
+                  location: 'canada'
+                  server_ip: '{{ ansible_default_ipv4.address }}'
+
+          - job_name: 'lighthouse-canada'
+            metrics_path: /metrics
+
+            static_configs:
+              - targets: ['lighthouse:5054']
+                labels:
+                  name: 'lighthouse'
+                  location: 'canada'
+                  server_ip: '{{ ansible_default_ipv4.address }}'
+
+          - job_name: 'geth-canada'
+            scrape_interval: 15s
+            scrape_timeout: 10s
+            metrics_path: /debug/metrics/prometheus
+            scheme: http
+            static_configs:
+              - targets: ['geth:6060']
+                labels:
+                  name: 'geth'
+                  location: 'canada'
+                  server_ip: '{{ ansible_default_ipv4.address }}'
+
+          - job_name: 'ssv-canada'
+            scrape_interval: 15s
+            scrape_timeout: 10s
+            scheme: http
+            static_configs:
+              - targets: ['ssv-node:15000']
+                labels:
+                  name: 'ssv'
+                  location: 'canada'
+                  server_ip: '{{ ansible_default_ipv4.address }}'
+
+    # Garbage collection
+    - role: ethpandaops.general.docker_cleanup

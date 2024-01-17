@@ -1,0 +1,7 @@
+collections:
+  - name: ethereum/client-go
+    version: v1.13.10
+  - name: sigp/lighthouse
+    version: v4.5.0-amd64-modern
+  - name: flashbots/mev-boost
+    version: 1.6
