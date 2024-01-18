@@ -1,7 +1,10 @@
 collections:
   - name: ethereum/client-go
-    version: v1.13.10
+    version: v1.12.0
+    source: https://docker.io
   - name: sigp/lighthouse
-    version: v4.5.0-amd64-modern
+    version: v4.4.0
+    source: https://docker.io
   - name: flashbots/mev-boost
-    version: 1.6
+    version: 1.5
+    source: https://docker.io

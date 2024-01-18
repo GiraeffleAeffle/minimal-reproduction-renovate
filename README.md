@@ -23,34 +23,16 @@ The playbook is located in a tasks folder, so the path to the ansible playbook w
       "depNameTemplate": "renovate-runner",
       "packageNameTemplate": "renovate-bot/renovate-runner",
       "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "description": "Update Docker images in Ansible playbook",
+      "fileMatch": ["requirements\\.yml"],
+      "matchStrings": [
+        "\"name\":\\s*\"(?<depName>[^\"]+)\",\\s*\"version\":\\s*\"(?<currentValue>[^\"]+)\""
+      ],
+      "datasourceTemplate": "docker"
     }
-  ],
-  "ansible": {
-    "packageRules": [
-      {
-        "matchDatasources": ["docker"],
-        "enabled": false
-      },
-      {
-        "matchDatasources": ["docker"],
-        "matchPackageNames": ["ethereum/client-go", "sigp/lighthouse", "flashbots/mev-boost"],
-        "versioning": "semver",
-        "enabled": true
-      }
-    ],
-    "regexManagers": [
-        {
-          "description": "Update Docker images in Ansible playbook",
-          "fileMatch":["^tasks/.*\\.ya?ml$"],
-          "matchStrings": [
-            "\\s*geth_container_image:\\s+?(:?[\\\/a-z\\.-]+\\\/)*(?<depName>[\\\/a-z-]+)(?::(?<currentValue>[a-z0-9.-]+))?",
-            "\\s*lighthouse_container_image:\\s+?(:?[\\\/a-z\\.-]+\\\/)*(?<depName>[\\\/a-z-]+)(?::(?<currentValue>[a-z0-9.-]+))?",
-            "\\s*mev_boost_container_image:\\s+?(:?[\\\/a-z\\.-]+\\\/)*(?<depName>[\\\/a-z-]+)(?::(?<currentValue>[a-z0-9.-]+))?"
-          ],
-        "datasourceTemplate": "docker"
-        }
-    ]
-  }
+  ]
 }
-
 ```
