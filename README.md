@@ -10,26 +10,17 @@ The playbook is located in a tasks folder, so the path to the ansible playbook w
 ```
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Renovate preset to update gitlab remote include for renovate templates",
+  "extends": [
+    "config:recommended"
+  ],
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Update renovate remote includes version",
-      "fileMatch": ["\\.gitlab-ci\\.ya?ml$"],
+      "fileMatch": ["^defaults/vars\\.yml$"],
       "matchStrings": [
-        "-\\s+remote:\\s+https://gitlab\\.com/renovate-bot/renovate-runner/-/raw/(?<currentValue>v[0-9.]+)/"
-      ],
-      "datasourceTemplate": "gitlab-releases",
-      "depNameTemplate": "renovate-runner",
-      "packageNameTemplate": "renovate-bot/renovate-runner",
-      "versioningTemplate": "semver"
-    },
-    {
-      "customType": "regex",
-      "description": "Update Docker images in Ansible playbook",
-      "fileMatch": ["requirements\\.yml"],
-      "matchStrings": [
-        "\"name\":\\s*\"(?<depName>[^\"]+)\",\\s*\"version\":\\s*\"(?<currentValue>[^\"]+)\""
+        "\"(?<depName>docker.io/ethereum/client-go):(?<currentValue>v[0-9.]+)\"",
+        "\"(?<depName>docker.io/sigp/lighthouse):(?<currentValue>v[0-9.]+)\"",
+        "\"(?<depName>docker.io/flashbots/mev-boost):(?<currentValue>[0-9.]+)\""
       ],
       "datasourceTemplate": "docker"
     }

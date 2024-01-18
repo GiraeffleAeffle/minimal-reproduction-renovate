@@ -22,7 +22,8 @@
       # Client specific configuration
 
       # Geth
-      geth_container_image: ethereum/client-go:v1.13.10
+      image: ethereum/client-go:v1.13.10
+      geth_container_image: {{ image }}
       geth_container_command_extra_args:
         - --goerli
         - --ws

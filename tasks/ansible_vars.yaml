@@ -1,13 +1,7 @@
-- name: Load Docker Image Versions
-  hosts: localhost
-  tasks:
-    - name: Include Docker Image Versions
-      include_vars:
-        file: requirements.yaml
-        name: collections
-
 - name: SafeStake Geth Lighthouse MEV-Boost
-  hosts: hetzner_germany_safestake
+  hosts: localhost
+  vars_files:    
+    - "./defaults/vars.yml"
   become: yes
   roles:
     # Install dependencies
@@ -30,7 +24,7 @@
       # Client specific configuration
 
       # Geth
-      geth_container_image: "{{ collections[0].name }}:{{ collections[0].version }}"
+      geth_container_image: "{{geth_image}}"  
       geth_container_command_extra_args:
         - --goerli
         - --ws
@@ -42,7 +36,7 @@
         - --state.scheme=path
 
       # Lighthouse
-      lighthouse_container_image: "{{ collections[1].name }}:{{ collections[1].version }}"
+      lighthouse_container_image: "{{lighthouse_image}}"
       lighthouse_checkpoint_sync_enabled: true
       checkpoint_sync_url: https://goerli.checkpoint-sync.ethpandaops.io
       lighthouse_container_command_extra_args:
@@ -52,7 +46,7 @@
         - --target-peers=100
 
       # MEV-Boost
-      mev_boost_container_image: "{{ collections[2].name }}:{{ collections[2].version }}"
+      mev_boost_container_image: "{{mev_boost_image}}"
       mev_boost_container_name: mev-boost
       mev_boost_container_command_extra_args:
         - --goerli
@@ -140,5 +134,5 @@
                   location: 'canada'
                   server_ip: '{{ ansible_default_ipv4.address }}'
 
-    # Garbage collection
+    Garbage collection
     - role: ethpandaops.general.docker_cleanup

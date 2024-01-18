@@ -1,0 +1,3 @@
+geth_image: "docker.io/ethereum/client-go:v1.12.0"
+lighthouse_image: "docker.io/sigp/lighthouse:v4.4.0"
+mev_boost_image: "docker.io/flashbots/mev-boost:1.5"
